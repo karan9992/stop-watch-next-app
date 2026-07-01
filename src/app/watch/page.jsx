@@ -1,62 +1,81 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const page = () => {
 
     const [time, setTime] = useState(0)
+    const [isRunning, setIsRunning] = useState(false)
     const [inputVal, setInputVal] = useState({
-        hh: 0,
-        mm: 0,
-        ss: 0
+        hh: "",
+        mm: "",
+        ss: ""
     })
+    const intervalRef = useRef(null)
 
+    const normalizeTime = (nextInput) => {
+        const totalSeconds =
+            Number(nextInput.hh || 0) * 3600 +
+            Number(nextInput.mm || 0) * 60 +
+            Number(nextInput.ss || 0)
+
+        const hh = Math.floor(totalSeconds / 3600)
+        const mm = Math.floor((totalSeconds % 3600) / 60)
+        const ss = totalSeconds % 60
+
+        return {
+            hh: String(hh),
+            mm: String(mm),
+            ss: String(ss)
+        }
+    }
+
+    useEffect(() => {
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current)
+            }
+        }
+    }, [])
 
     const handleChange = (e) => {
-        setInputVal((prev) => ({
-            ...prev,
-            [e.target.placeholder.toLowerCase()]: e.target.value
-        }))
+        const key = e.target.placeholder.toLowerCase()
+        const value = e.target.value
 
-        setInputVal(prev => {
-
-            let newSS = prev.ss % 60;
-            let newMM = parseInt(prev.ss / 60)
-            console.log("before nM", newMM)
-            newMM += prev.mm
-            console.log("afeter nM", newMM)
-
-
-            let newHH = parseInt(newMM / 60)
-            newMM = parseInt(newMM % 60)
-
-            newHH += prev.hh
-            console.log(newHH, newMM, newSS)
-
-            return {
-                hh: newHH,
-                mm: newMM,
-                ss: newSS
-            }
-
-        })
-
+        setInputVal((prev) =>
+            normalizeTime({
+                ...prev,
+                [key]: value
+            })
+        )
     }
 
     const handleStart = () => {
+        if (isRunning) return
 
-        setTime(Number(inputVal.ss + inputVal.mm * 60 + inputVal.hh * 60 * 60))
+        const totalSeconds =
+            Number(inputVal.ss || 0) +
+            Number(inputVal.mm || 0) * 60 +
+            Number(inputVal.hh || 0) * 3600
 
-        const interval = setInterval(() => {
+        if (totalSeconds <= 0) return
+
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current)
+        }
+
+        setIsRunning(true)
+        setTime(totalSeconds)
+
+        intervalRef.current = setInterval(() => {
             setTime((prev) => {
-                const nextTime = prev - 1
-                console.log("Time", nextTime)
-
-                if (nextTime <= 0) {
-                    clearInterval(interval)
+                if (prev <= 1) {
+                    clearInterval(intervalRef.current)
+                    intervalRef.current = null
+                    setIsRunning(false)
                     return 0
                 }
 
-                return nextTime
+                return prev - 1
             })
         }, 1000)
     }
@@ -64,11 +83,16 @@ const page = () => {
 
 
     const handleReset = () => {
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current)
+            intervalRef.current = null
+        }
         setTime(0)
+        setIsRunning(false)
         setInputVal({
-            mm: 0,
-            hh: 0,
-            ss: 0
+            mm: "",
+            hh: "",
+            ss: ""
         })
     }
 
