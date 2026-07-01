@@ -57,28 +57,22 @@ const page = () => {
         )
     }
 
-    const handleStart = () => {
-        if (isRunning) return
-
-        const totalSeconds =
-            Number(inputVal.ss || 0) +
-            Number(inputVal.mm || 0) * 60 +
-            Number(inputVal.hh || 0) * 3600
-
-        if (totalSeconds <= 0) return
-
+    const clearTimer = () => {
         if (intervalRef.current) {
             clearInterval(intervalRef.current)
+            intervalRef.current = null
         }
+    }
 
+    const startCountdown = (startFrom) => {
+        clearTimer()
         setIsRunning(true)
-        setTime(totalSeconds)
+        setTime(startFrom)
 
         intervalRef.current = setInterval(() => {
             setTime((prev) => {
                 if (prev <= 1) {
-                    clearInterval(intervalRef.current)
-                    intervalRef.current = null
+                    clearTimer()
                     setIsRunning(false)
                     return 0
                 }
@@ -88,13 +82,32 @@ const page = () => {
         }, 1000)
     }
 
+    const handleStart = () => {
+        if (isRunning) {
+            clearTimer()
+            setIsRunning(false)
+            return
+        }
+
+        if (time > 0) {
+            startCountdown(time)
+            return
+        }
+
+        const totalSeconds =
+            Number(inputVal.ss || 0) +
+            Number(inputVal.mm || 0) * 60 +
+            Number(inputVal.hh || 0) * 3600
+
+        if (totalSeconds <= 0) return
+
+        startCountdown(totalSeconds)
+    }
+
 
 
     const handleReset = () => {
-        if (intervalRef.current) {
-            clearInterval(intervalRef.current)
-            intervalRef.current = null
-        }
+        clearTimer()
         setTime(0)
         setIsRunning(false)
         setInputVal({
@@ -123,14 +136,20 @@ const page = () => {
                 </div>
 
                 <div className=" mt-6 p-1 flex justify-around">
-                    <button className='p-2 px-12 bg-green-500 hover:bg-green-700 rounded text-2xl transition-transform duration-75 active:scale-95'
-                        onClick={handleStart}>Start</button>
+                    <button
+                        className={`${isRunning
+                            ? "bg-amber-500 hover:bg-amber-600"
+                            : time > 0
+                                ? "bg-sky-500 hover:bg-sky-600"
+                                : "bg-green-500 hover:bg-green-700"
+                            } p-2 px-12 rounded text-2xl transition-transform duration-75 active:scale-95`}
+                        onClick={handleStart}>{isRunning ? "Pause" : time > 0 ? "Resume" : "Start"}</button>
                     <button className='bg-red-600 hover:bg-red-700 p-2 px-12 rounded text-2xl transition-transform duration-75 active:scale-95'
                         onClick={handleReset}>Reset</button>
                 </div>
             </div>
 
-        </div>
+        </div >
     )
 }
 
