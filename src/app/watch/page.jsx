@@ -29,6 +29,14 @@ const page = () => {
         }
     }
 
+    const formatTime = (totalSeconds) => {
+        const hh = Math.floor(totalSeconds / 3600)
+        const mm = Math.floor((totalSeconds % 3600) / 60)
+        const ss = totalSeconds % 60
+
+        return `${String(hh).padStart(2, '0')} : ${String(mm).padStart(2, '0')} : ${String(ss).padStart(2, '0')}`
+    }
+
     useEffect(() => {
         return () => {
             if (intervalRef.current) {
@@ -97,12 +105,15 @@ const page = () => {
     }
 
     return (
-        <div className='flex  flex-1 justify-center items-center '>
-            <div className="border p-4 rounded-xl w-full max-w-2xl">
+        <div className='flex flex-1 justify-center items-center px-4 py-10 font-mono'>
+            <div className="w-full max-w-2xl rounded-2xl border border-slate-700/80 bg-neutral-950/90 p-4 shadow-[0_24px_80px_rgba(0,0,0,0.55)] backdrop-blur">
 
-                <h1 className='text-center font-semibold text-3xl text-blue-500'>Stop Watch </h1>
-                <div className="border mt-16 my-6 text-center p-2">
-                    {time}
+                <h1 className='text-center text-4xl font-semibold  text-indigo-300 drop-shadow-[0_0_18px_rgba(56,189,248,0.45)]'>Stop Watch</h1>
+                <div className="relative mt-16 my-6 overflow-hidden rounded-2xl border border-slate-700 bg-gradient-to-b from-neutral-950 via-neutral-900 to-black px-6 py-8 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_0_30px_rgba(15,23,42,0.8)]">
+                    <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,transparent_35%,rgba(255,255,255,0.06)_50%,transparent_65%)]" />
+                    <div className="relative  text-5xl font-semibold text-neutral-100 tabular-nums sm:text-6xl">
+                        {formatTime(time)}
+                    </div>
                 </div>
 
                 <div className=" w-full  p-1 flex gap-4">
